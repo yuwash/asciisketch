@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
-from PIL import Image
+from PIL import Image, ImageDraw
 from ruamel.yaml import YAML
 
 
@@ -101,14 +101,20 @@ class AsciiSketch():
                 continue
             yield row
 
-    def image(self):
+    def image(self, scale_x=1, scale_y=None):
+        if scale_y is None:
+            scale_y = scale_x
         im = Image.new(
             mode=self.mode,
-            size=(self.width, self.height),
+            size=(scale_x*self.width, scale_y*self.height),
             color=self.background_color)
+        draw = ImageDraw.Draw(im)
         for y, line in enumerate(self.rows()):
             for x, char in enumerate(line):
-                im.putpixel((x, y), self.encoding[char])
+                draw.rectangle(
+                    (scale_x*x, scale_y*y,
+                     scale_x*(x + 1) - 1, scale_y*(y + 1) - 1),
+                    fill=self.encoding[char])
         return im
 
 
@@ -116,9 +122,10 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('file')
     parser.add_argument('-o', '--output')
+    parser.add_argument('--scale', type=int, default=1)
     args = parser.parse_args()
     aske = AsciiSketch.from_file(args.file)
-    im = aske.image()
+    im = aske.image(scale_x=args.scale)
     if isinstance(args.output, str):
         im.save(args.output)
     else:
