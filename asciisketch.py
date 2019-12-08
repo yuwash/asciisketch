@@ -77,6 +77,18 @@ class AsciiSketch():
             self.background_color = 0
         self.encoding[' '] = self.background_color
 
+    @classmethod
+    def from_file(cls, path):
+        """
+        >>> from hashlib import sha1
+        >>> aske = AsciiSketch.from_file('examples/camel.aske')
+        >>> sha1(aske.image().tobytes()).hexdigest()
+        '5fd38b80890fb9ef47681b1d3334c42e94ba9b52'
+        """
+        with open(path) as sketchfile:
+            source = sketchfile.read()
+        return cls(source)
+
     def rows(self):
         metadata_block = False
         for row in self.source.split('\n'):
@@ -105,9 +117,7 @@ if __name__ == '__main__':
     parser.add_argument('file')
     parser.add_argument('-o', '--output')
     args = parser.parse_args()
-    with open(args.file) as sketchfile:
-        source = sketchfile.read()
-    aske = AsciiSketch(source)
+    aske = AsciiSketch.from_file(args.file)
     im = aske.image()
     if isinstance(args.output, str):
         im.save(args.output)
