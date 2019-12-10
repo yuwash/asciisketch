@@ -111,11 +111,45 @@ class AsciiSketch():
         draw = ImageDraw.Draw(im)
         for y, line in enumerate(self.rows()):
             for x, char in enumerate(line):
-                draw.rectangle(
+                fill_rectangle(
+                    draw,
                     (scale_x*x, scale_y*y,
                      scale_x*(x + 1) - 1, scale_y*(y + 1) - 1),
                     fill=self.encoding[char])
         return im
+
+
+def fill_rectangle(imagedraw, xy, *args, **kwargs):
+    return imagedraw.rectangle(xy, *args, **kwargs)
+
+
+def fill_ellipse(imagedraw, xy, *args, **kwargs):
+    return imagedraw.ellipse(xy, *args, **kwargs)
+
+
+def fill_secchi(imagedraw, xy, *args, **kwargs):
+    return [
+        imagedraw.pieslice(xy, start, start + 90, *args, **kwargs)
+        for start in (-90, 90)]
+
+
+def fill_leaf(imagedraw, xy, *args, **kwargs):
+    scale_x = xy[2] - xy[0]
+    scale_y = xy[3] - xy[1]
+    return [
+        imagedraw.chord(
+            scale_xy(shift_xy(xy, shift_x, shift_y), scale_x, scale_y),
+            start, start + 90, *args, **kwargs)
+        for start, shift_x, shift_y
+        in [(-90, -scale_x, 0), (90, 0, -scale_y)]]
+
+
+def shift_xy(xy, shift_x, shift_y):
+    return [x_or_y + shift for x_or_y, shift in zip(xy, 2*[shift_x, shift_y])]
+
+
+def scale_xy(xy, add_x, add_y):
+    return xy[:2] + [xy[2] + add_x, xy[3] + add_y]
 
 
 if __name__ == '__main__':
