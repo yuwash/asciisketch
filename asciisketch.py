@@ -75,6 +75,17 @@ class AsciiSketch():
                     in enumerate(metadata['background-color']))
         else:
             self.background_color = 0
+        self.fill_methods = [
+            {
+                'rectangle': fill_rectangle,
+                'ellipse': fill_ellipse,
+                'secchi': fill_secchi,
+                'leaf': fill_leaf,
+                'oscar': fill_oscar,
+            }[fill_method]
+            for fill_method in metadata.get('fill-methods', ['rectangle'])]
+        self.depth = len(self.fill_methods)
+        self.width //= self.depth
         self.encoding[' '] = self.background_color
 
     @classmethod
@@ -109,13 +120,15 @@ class AsciiSketch():
             size=(scale_x*self.width, scale_y*self.height),
             color=self.background_color)
         draw = ImageDraw.Draw(im)
-        for y, line in enumerate(self.rows()):
-            for x, char in enumerate(line):
-                fill_rectangle(
-                    draw,
-                    (scale_x*x, scale_y*y,
-                     scale_x*(x + 1) - 1, scale_y*(y + 1) - 1),
-                    fill=self.encoding[char])
+        for i, fill_method in enumerate(self.fill_methods):
+            for y, line in enumerate(self.rows()):
+                for x, char in enumerate(
+                        line[i:len(line):len(self.fill_methods)]):
+                    fill_method(
+                        draw,
+                        (scale_x*x, scale_y*y,
+                         scale_x*(x + 1) - 1, scale_y*(y + 1) - 1),
+                        fill=self.encoding[char])
         return im
 
 
