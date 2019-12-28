@@ -144,6 +144,11 @@ def fill_leaf(imagedraw, xy, *args, **kwargs):
         in [(-90, -scale_x, 0), (90, 0, -scale_y)]]
 
 
+def fill_oscar(imagedraw, xy, *args, **kwargs):
+    top_right = [xy[2], xy[1]]
+    return imagedraw.polygon(list(xy) + top_right, *args, **kwargs)
+
+
 def shift_xy(xy, shift_x, shift_y):
     return [x_or_y + shift for x_or_y, shift in zip(xy, 2*[shift_x, shift_y])]
 
